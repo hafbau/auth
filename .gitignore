@@ -1,0 +1,15 @@
+// node modules
+node_modules
+
+// environment vars
+.env
+
+// idea scrapbook
+.idea
+
+.nyc_*
+
+coverage
+
+// log files
+*.log
