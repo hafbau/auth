@@ -16,7 +16,7 @@ const request = require('request-promise-native');
          this.apiUrl = apiUrl;
      }
 
-     registerWithEmailAndPassword({ email, password }) {
+    registerWithEmailAndPassword({ email, password }) {
         return request({
             method: 'POST',
             uri: `${this.apiUrl}/register`,
@@ -25,23 +25,25 @@ const request = require('request-promise-native');
         })
         .then(response => {
             this.token = response.token;
-            return response;
+            this.currentUser = response.user;
+            return response.user;
         })
         .catch(err => {
             throw err
         })
-     }
+    }
 
     loginWithEmailAndPassword({ email, password }) {
         return request({
             method: 'POST',
             uri: `${this.apiUrl}/login`,
-            body: { email, password },
+            body: { 'email': email, 'password': password },
             json: true
         })
         .then(response => {
             this.token = response.token;
-            return response;
+            this.currentUser = response.user;
+            return response.user;
         })
         .catch(err => {
             throw err
@@ -56,12 +58,44 @@ const request = require('request-promise-native');
             json: true
         })
         .then(response => {
+            if (response.loggedIn == false || response.success) {
+                this.currentUser = null;
+                this.token = undefined;
+            }
             return response;
         })
         .catch(err => {
             throw err
+        });
+    }
+    
+    isLoggedIn() {
+        if (!this.token) return Promise.resolve(false);
+        return this.refreshUser();
+    }
+    
+    refreshUser() {
+        return request({
+            method: 'GET',
+            uri: `${this.apiUrl}/`,
+            headers: { 'x-access-token': this.token },
+            json: true
         })
+        .then(response => {
+            if (response.loggedIn === false) {
+                this.currentUser = null;
+                this.token = undefined; // invalidates the now useless token
+            } else {
+                this.currentUser = response.user;
+            }
+            return this.currentUser;
+        })
+        .catch(err => {
+            throw err
+        });
+        
     }
  }
 
+ // exports a singleton instance
  module.exports = new Auth({});
