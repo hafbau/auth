@@ -5,22 +5,27 @@ const uuid = require('cuid');
 const request = require('request-promise-native');
 
  class Auth {
-     constructor({ appId = uuid(), apiUrl = 'http://localhost:3000' }) {
+    constructor({ appId = uuid(), apiUrl = 'http://localhost:3000' }) {
         this.appId = appId;
         this.apiUrl = apiUrl;
-     }
+    }
 
-     init({ appId = this.appId, apiUrl = this.apiUrl }) {
-         // backfills constructor
-         this.appId = appId;
-         this.apiUrl = apiUrl;
-     }
+    init({ appId = this.appId, apiUrl = this.apiUrl }) {
+        // backfills constructor
+        this.appId = appId;
+        this.apiUrl = apiUrl;
+    }
 
-    registerWithEmailAndPassword({ email, password }) {
+    registerWithEmailAndPassword(userDetail) {
+        const cloned = Object.assign({}, JSON.parse(JSON.stringify(userDetail)));
+        const { email, password } = cloned;
+        delete cloned.email;
+        delete cloned.password;
+
         return request({
             method: 'POST',
             uri: `${this.apiUrl}/register`,
-            body: { 'email': email, 'password': password },
+            body: { 'email': email, 'password': password, 'meta': cloned },
             json: true
         })
         .then(response => {
