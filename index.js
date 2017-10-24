@@ -55,11 +55,11 @@ const request = require('request-promise-native');
         })
     }
 
-    logout() {
+    logout(token = this.token) {
         return request({
             method: 'POST',
             uri: `${this.apiUrl}/logout`,
-            body: { token: this.token },
+            body: { 'token': token },
             json: true
         })
         .then(response => {
@@ -79,11 +79,11 @@ const request = require('request-promise-native');
         return this.refreshUser();
     }
     
-    refreshUser() {
+    refreshUser(token = this.token) {
         return request({
             method: 'GET',
             uri: `${this.apiUrl}/`,
-            headers: { 'x-access-token': this.token },
+            headers: { 'x-access-token': token },
             json: true
         })
         .then(response => {
