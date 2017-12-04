@@ -17,15 +17,10 @@ const request = require('request-promise-native');
     }
 
     registerWithEmailAndPassword(userDetail) {
-        const cloned = Object.assign({}, JSON.parse(JSON.stringify(userDetail)));
-        const { email, password } = cloned;
-        delete cloned.email;
-        delete cloned.password;
-
         return request({
             method: 'POST',
-            uri: `${this.apiUrl}/register`,
-            body: { 'email': email, 'password': password, 'meta': cloned },
+            uri: `${this.apiUrl}/users`,
+            body: JSON.parse(JSON.stringify(userDetail)),
             json: true
         })
         .then(response => {
@@ -59,10 +54,12 @@ const request = require('request-promise-native');
         return request({
             method: 'POST',
             uri: `${this.apiUrl}/logout`,
+            headers: { 'x-access-token': token },
             body: { 'token': token },
             json: true
         })
         .then(response => {
+            console.log('logout response', response)
             if (response.loggedIn == false || response.success) {
                 this.currentUser = null;
                 this.token = undefined;
@@ -99,6 +96,34 @@ const request = require('request-promise-native');
             throw err
         });
         
+    }
+
+    update(userDetail, token = this.token) {
+        return Promise.resolve()
+        .then(_ => {
+            if (
+                userDetail._id &&
+                userDetail._id !== this.currentUser._id
+            ) throw new Error('You cannot update another user');
+
+            return;
+        })
+        .then(_ => {
+            return request({
+                method: 'PUT',
+                uri: `${this.apiUrl}/users/${this.currentUser._id}`,
+                headers: { 'x-access-token': token },
+                body: JSON.parse(JSON.stringify(userDetail)),
+                json: true
+            })
+        })
+        .then(response => {
+            this.currentUser = response.user;
+            return response.user;
+        })
+        .catch(err => {
+            throw err
+        });
     }
  }
 
