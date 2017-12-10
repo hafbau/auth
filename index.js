@@ -59,7 +59,6 @@ const request = require('request-promise-native');
             json: true
         })
         .then(response => {
-            console.log('logout response', response)
             if (response.loggedIn == false || response.success) {
                 this.currentUser = null;
                 this.token = undefined;
