@@ -101,17 +101,16 @@ const request = require('request-promise-native');
         return Promise.resolve()
         .then(_ => {
             if (
-                userDetail._id &&
+                userDetail._id && this.currentUser &&
                 userDetail._id !== this.currentUser._id
             ) throw new Error('You cannot update another user');
 
-            return;
-        })
-        .then(_ => {
             return request({
                 method: 'PUT',
-                uri: `${this.apiUrl}/users/${this.currentUser._id}`,
-                headers: { 'x-access-token': token },
+                uri: `${this.apiUrl}/users/${userDetail._id}`,
+                headers: {
+                    'x-access-token': token
+                },
                 body: JSON.parse(JSON.stringify(userDetail)),
                 json: true
             })
